@@ -32,11 +32,20 @@ rem	See the Chapter 3 "Basic Selectivity" for more details
 rem
 
 /*
-    P(A u B) = P(A) + P(B) - P(A) * P(B)
-    1/10 * 1000 + 1/10 * 1000 - (1/10 * 1/10 * 1000) = 100 + 100 - 10 = 190
+    Wnioski/Obserwacje
+
+    1. Algorytm dla 9i
+        
+        P(A u B) = P(A) + P(B) - P(A) * P(B)
+        1/10 * 1000 + 1/10 * 1000 - (1/10 * 1/10 * 1000) = 100 + 100 - 10 = 190
     
-    W 19.3.0.0.0 estymacja liczebności wierszy zachowuje się poprawnie. Jest 200 wierszy do pobrania.
+    2. Sprawdzenie dla 19.3.0.0.0
     
+        W 19.3.0.0.0 estymacja liczebności wierszy zachowuje się poprawnie. Jest 200 wierszy do pobrania.
+    
+    3. Cardinality dla wartosci spoza zakresu min - max
+    
+        Estymuje proporcjonalnie dla tego samego zakresu (tutaj 10). Poza zakresem 1.
 
 */
 
