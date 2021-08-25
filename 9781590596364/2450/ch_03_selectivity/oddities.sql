@@ -10,12 +10,24 @@ rem		10.1.0.4
 rem		10.1.0.2
 rem		 9.2.0.4
 rem		 8.1.7.4
+rem     19.3.0.0
 rem
 rem	Notes:
 rem	This suddenly behaves differently in 10.1.0.4, where
 rem	queries outside the low/high range scale back some of
 rem	their answers compared to 10.1.0.2
 rem
+
+/*
+        where month_no = 25 (spoza zakresu ze zmniejszajaca sie linia, minimalna wartosc 1) 
+            10.2 -> 100
+            19c -> 1
+        where month_no in (4, 4)
+            10.2 -> 100
+            19c -> 100
+
+
+*/
 
 start setenv
 set timing off
@@ -73,7 +85,6 @@ begin
 	dbms_stats.convert_raw_value(i_raw,m_n);
 	return m_n;
 end;
-.
 /
 
 variable b1 number;
@@ -84,13 +95,53 @@ set autotrace traceonly explain
 
 spool oddities
 
+explain plan for
 select count(*) from audience
 where month_no = 25
 ;
 
+select * from table(dbms_xplan.display);
+/*
+
+Plan hash value: 3337892515
+ 
+-------------------------------------------------------------------------------
+| Id  | Operation          | Name     | Rows  | Bytes | Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |          |     1 |     3 |     3   (0)| 00:00:01 |
+|   1 |  SORT AGGREGATE    |          |     1 |     3 |            |          |
+|*  2 |   TABLE ACCESS FULL| AUDIENCE |     1 |     3 |     3   (0)| 00:00:01 |
+-------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - filter("MONTH_NO"=25)
+   
+*/
+
+explain plan for
 select count(*) from audience
 where month_no in (4, 4)
 ;
+
+select * from table(dbms_xplan.display);
+
+/*
+    Plan hash value: 3337892515
+    -------------------------------------------------------------------------------
+    | Id  | Operation          | Name     | Rows  | Bytes | Cost (%CPU)| Time     |
+    -------------------------------------------------------------------------------
+    |   0 | SELECT STATEMENT   |          |     1 |     3 |     3   (0)| 00:00:01 |
+    |   1 |  SORT AGGREGATE    |          |     1 |     3 |            |          |
+    |*  2 |   TABLE ACCESS FULL| AUDIENCE |   100 |   300 |     3   (0)| 00:00:01 |
+    -------------------------------------------------------------------------------
+     
+    Predicate Information (identified by operation id):
+    ---------------------------------------------------
+       2 - filter("MONTH_NO"=4)
+*/
+
 
 select count(*) from audience
 where month_no in (3, 25) 

@@ -9,13 +9,19 @@ rem	Versions tested
 rem		10.1.0.2
 rem		 9.2.0.4
 rem		 8.1.7.4
+rem     19.3.0.0
 rem
 rem	Notes:
-rem	See notes in file birth_month_01 for baseline.
-rem	In this example, a random ten percent of the audience cannot
-rem	remember which month they were born in. This is represented
-rem	in the database by setting the month_no to null every 10th row.
+rem	    See notes in file birth_month_01 for baseline.
+rem	    In this example, a random ten percent of the audience cannot
+rem	    remember which month they were born in. This is represented
+rem	    in the database by setting the month_no to null every 10th row.
 rem
+
+/*
+    19c - wnioski
+        Zachowuje sie tak jak powininen => od ogolnej liczby wierszy odejmuje nulle.  
+*/
 
 start setenv
 
@@ -100,6 +106,13 @@ from
 where	table_name = 'AUDIENCE'
 ;
 
+/*
+COLUMN_NAME          NUM_DISTINCT  NUM_NULLS    DENSITY        LOW       HIGH
+-------------------- ------------ ---------- ---------- ---------- ----------
+ID                           1200          0 ,000833333333          1       1200
+MONTH_NO                       12        120 ,0833333333          1         12
+*/
+
 select 
 	column_name, endpoint_number, endpoint_value 
 from 
@@ -113,11 +126,61 @@ order by
 
 set autotrace traceonly explain
 
+explain plan for
 select count(*) 
 from audience
 where month_no = 12
 ;
 
+select * from table(dbms_xplan.display);
+
+/*
+    Plan hash value: 3337892515
+ 
+    ---------------------------------------------------------------
+    | Id  | Operation          | Name     | Rows  | Bytes | Cost  |
+    ---------------------------------------------------------------
+    |   0 | SELECT STATEMENT   |          |     1 |     3 |     2 |
+    |   1 |  SORT AGGREGATE    |          |     1 |     3 |       |
+    |*  2 |   TABLE ACCESS FULL| AUDIENCE |    90 |   270 |     2 |
+    ---------------------------------------------------------------
+ 
+    Predicate Information (identified by operation id):
+    ---------------------------------------------------
+     
+       2 - filter("MONTH_NO"=12)
+ 
+    Note
+    -----
+       - cpu costing is off (consider enabling it)
+*/
+
 set autotrace off
 
 spool off
+
+alter system flush shared_pool;
+alter session set tracefile_identifier='CARDINALITY_NULLS';
+alter session set events '10053 trace name context forever, level 2';
+
+select count(*) 
+from audience
+where month_no = 12
+;
+
+/*
+    =====================================
+    Access path analysis for AUDIENCE
+    ***************************************
+    SINGLE TABLE ACCESS PATH
+      Single Table Cardinality Estimation for AUDIENCE[AUDIENCE]
+      SPD: Return code in qosdDSDirSetup: NOCTX, estType = TABLE
+    
+     kkecdn: Single Table Predicate:"AUDIENCE"."MONTH_NO"=12
+      Column (#2): MONTH_NO(NUMBER)
+        AvgLen: 3 NDV: 12 Nulls: 120 Density: 0.083333 Min: 1.000000 Max: 12.000000
+      Estimated selectivity: 0.083333 , col: #2
+      Table: AUDIENCE  Alias: AUDIENCE
+        Card: Original: 1200.000000  Rounded: 90  Computed: 90.000000  Non Adjusted: 90.000000
+*/
+

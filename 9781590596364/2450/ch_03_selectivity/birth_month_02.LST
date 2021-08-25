@@ -1,0 +1,11 @@
+
+
+COLUMN_NAME          NUM_DISTINCT  NUM_NULLS    DENSITY        LOW       HIGH
+-------------------- ------------ ---------- ---------- ---------- ----------
+ID                           1200          0 ,000833333333          1       1200
+MONTH_NO                       12        120 ,0833333333          1         12
+
+2 rows selected.
+
+
+

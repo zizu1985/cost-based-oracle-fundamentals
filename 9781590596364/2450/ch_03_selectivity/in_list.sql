@@ -9,9 +9,17 @@ rem	Versions tested
 rem		10.1.0.2
 rem		 9.2.0.6
 rem		 8.1.7.4
+rem     19.3.0.0
 rem
 rem	Notes:
 rem
+
+/* 19c - wnioski
+
+    1. Poprawnie wylicza cardinality dla wartosci z listy
+
+
+*/
 
 start setenv
 
@@ -57,6 +65,59 @@ set autotrace traceonly explain
 
 spool in_list
 
+explain plan for
+select count(*) from audience where month_no in (1,2,3);
+
+select * from table(dbms_xplan.display);
+/*
+    Plan hash value: 3337892515     
+    ---------------------------------------------------------------
+    | Id  | Operation          | Name     | Rows  | Bytes | Cost  |
+    ---------------------------------------------------------------
+    |   0 | SELECT STATEMENT   |          |     1 |     3 |     2 |
+    |   1 |  SORT AGGREGATE    |          |     1 |     3 |       |
+    |*  2 |   TABLE ACCESS FULL| AUDIENCE |   300 |   900 |     2 |
+    ---------------------------------------------------------------
+     
+    Predicate Information (identified by operation id):
+    ---------------------------------------------------
+     
+       2 - filter("MONTH_NO"=1 OR "MONTH_NO"=2 OR "MONTH_NO"=3)
+     
+    Note
+    -----
+       - cpu costing is off (consider enabling it)
+*/
+
+explain plan for
+select /*+ USE_CONCAT */ count(*) from audience where month_no in (1,2,3);
+
+select * from table(dbms_xplan.display);
+/*
+Plan hash value: 3337892515
+ 
+-------------------------------------------------------------------------------
+| Id  | Operation          | Name     | Rows  | Bytes | Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |          |     1 |     3 |     3   (0)| 00:00:01 |
+|   1 |  SORT AGGREGATE    |          |     1 |     3 |            |          |
+|*  2 |   TABLE ACCESS FULL| AUDIENCE |   300 |   900 |     3   (0)| 00:00:01 |
+-------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - filter("MONTH_NO"=1 OR "MONTH_NO"=2 OR "MONTH_NO"=3)
+ 
+Hint Report (identified by operation id / Query Block Name / Object Alias):
+Total hints for statement: 1 (U - Unused (1))
+---------------------------------------------------------------------------
+ 
+   1 -  SEL$1
+         U -  USE_CONCAT
+*/
+
+
 select count(*) from audience where month_no in (1,2);
 select count(*) from audience where month_no in (1,2,3);
 select count(*) from audience where month_no in (1,2,3,4);
@@ -81,3 +142,4 @@ select count(*) from audience where month_no in (
 set autotrace off
 
 spool off
+

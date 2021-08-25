@@ -5,6 +5,7 @@ rem	Dated:		June 2002
 rem	Purpose:	Problems with FIRST_ROWS optimisation
 rem
 rem	Last tested 
+rem     19.3.0.0 (dated 12.06.2021)
 rem		10.1.0.4
 rem		 9.2.0.6
 rem		 8.1.7.4
@@ -48,6 +49,10 @@ rem
 start setenv
 
 drop table t1;
+
+rem A jaki jest domysly _optimizer_cost_model ?
+rem CHOOSE -> optymalizator sam wybiera
+rem A jakie opcje sa ???
 
 begin
 	begin		execute immediate 'purge recyclebin';

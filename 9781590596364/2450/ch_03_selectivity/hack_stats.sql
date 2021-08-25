@@ -8,6 +8,7 @@ rem	Last tested
 rem		10.0.1.4
 rem		 9.2.0.6
 rem		 8.1.7.4
+rem     19.3.0.0
 rem
 rem	Needs some adjustment for 8.1
 rem	Does not cater for partitioning
@@ -24,12 +25,12 @@ rem
 
 start setenv
 
-define m_source_table='t1'
-define m_source_column='x'
+define m_source_table='AUDIENCE'
+define m_source_column='MONTH_NO'
 define m_source_index='t1_btree'
 
-define m_target_table=''
-define m_target_column=''
+define m_target_table='AUDIENCE'
+define m_target_column='MONTH_NO'
 define m_target_index=''
 
 rem
@@ -116,7 +117,7 @@ begin
 
 	--------------------------------------------------
 */
-
+/*
 	dbms_stats.get_table_stats(
 		ownname 	=> NULL,	
 		tabname		=>'&m_source_table.',
@@ -135,7 +136,7 @@ begin
 		numblks		=> m_numblks,
 		avgrlen		=> m_avgrlen
 	);
-
+*/
 
 /*
 	--------------------------------------------------
@@ -143,6 +144,7 @@ begin
 	Column statistics
 
 	--------------------------------------------------
+*/
 
 	dbms_stats.get_column_stats(
 		ownname		=> NULL,
@@ -156,7 +158,8 @@ begin
 	); 
 
 
-	m_avgclen := m_avgclen + 30;
+	m_distcnt  := 25;
+    m_density := 0.5;
 
 	dbms_output.put_line('Changing statistics on column &m_source_column');
 	dbms_stats.set_column_stats(
@@ -169,9 +172,6 @@ begin
 		srec		=> srec,
 		avgclen		=> m_avgclen
 	); 
-
-*/
-
 
 --
 --	Just in case you comment everything out

@@ -9,10 +9,11 @@ rem	Versions tested
 rem		10.1.0.2
 rem		 9.2.0.6
 rem		 8.1.7.4
+rem     19.3.0.0
 rem
 rem	Notes:
-rem	Checking effects of in-list error in 8i with larger number
-rem	of possible distinct values in base column.
+rem	    Checking effects of in-list error in 8i with larger number
+rem	    of possible distinct values in base column.
 rem
 
 start setenv
